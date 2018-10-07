@@ -5,6 +5,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const User = require('./database/index');
 const session = require('express-session');
+const passport = require('passport');
 const indexRouter = require('./routes/index');
 const usersRouter = require('./routes/users');
 const keys = require('./config/keys');
@@ -24,7 +25,20 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(passport.initialize());
 app.use(session({ secret: sessionSecret }));
+
+passport.serializeUser(function(user, done) {
+  console.log('user.id ', user.id);
+  done(null, user.id);
+});
+
+passport.deserializeUser(function(id, done) {
+  console.log('id is ', id);
+  User.findById(id, function(err, user) {
+    done(err, user);
+  });
+});
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
